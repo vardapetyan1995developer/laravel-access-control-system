@@ -20,6 +20,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions.index');
     Route::get('/permissions/create', [PermissionController::class, 'create'])->name('permissions.create');
     Route::post('/permissions/store', [PermissionController::class, 'store'])->name('permissions.store');
+    Route::get('/permissions/{permission}/edit', [PermissionController::class, 'edit'])->name('permissions.edit');
+    Route::patch('/permissions/{permission}', [PermissionController::class, 'update'])->name('permissions.update');
 });
 
 require __DIR__.'/auth.php';
