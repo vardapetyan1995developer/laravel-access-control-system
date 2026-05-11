@@ -17,10 +17,46 @@
                 <div class="p-6 text-gray-900">
                     <x-message></x-message>
 
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                        <tr class="border-b">
+                            <th class="px-6 py-3 text-left" width="60">#</th>
+                            <th class="px-6 py-3 text-left">Name</th>
+                            <th class="px-6 py-3 text-left">Permissions</th>
+                            <th class="px-6 py-3 text-left" width="180">Created</th>
+                            <th class="px-6 py-3 text-center" width="180">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                        @if($roles->isNotEmpty())
+                            @foreach($roles as $key => $role)
+                                <tr class="border-b">
+                                    <td class="px-6 py-3 text-left">{{ $role->id }}</td>
+                                    <td class="px-6 py-3 text-left">{{ $role->name }}</td>
+                                    <td class="px-6 py-3 text-left">{{ $role->permissions->pluck('name')->implode(', ') }}</td>
+                                    <td class="px-6 py-3 text-left">
+                                        {{ Carbon::parse($role->created_at)->format('d M, Y') }}
+                                    </td>
+                                    <td class="px-6 py-3 text-center">
+                                       {{-- <a href="{{ route('roles.edit', $role->id) }}"
+                                           class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
+                                            Edit
+                                        </a>--}}
 
+                                        {{--<a href="javascript:void(0);"
+                                           data-url="{{ route('roles.delete', $role->id) }}"
+                                           class="delete-role bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
+                                            Delete
+                                        </a>--}}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
+                        </tbody>
+                    </table>
 
                     <div class="my-3">
-                        {{--{{ $roles->links() }}--}}
+                        {{ $roles->links() }}
                     </div>
                 </div>
             </div>

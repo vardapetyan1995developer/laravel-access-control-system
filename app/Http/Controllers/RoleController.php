@@ -17,7 +17,7 @@ class RoleController extends Controller
      */
     public function index(): Renderable
     {
-        $roles = Role::query()->orderByDesc('created_at')->paginate(10);
+        $roles = Role::query()->orderBy('name')->paginate(5);
 
         return view('roles.list', compact('roles'));
     }
