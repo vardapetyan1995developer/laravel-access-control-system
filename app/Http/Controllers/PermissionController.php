@@ -17,7 +17,7 @@ class PermissionController extends Controller
      */
     public function index(): Renderable
     {
-        $permissions = Permission::query()->orderByDesc('created_at')->paginate(10);
+        $permissions = Permission::query()->orderByDesc('created_at')->paginate(5);
 
         return view('permissions.list', compact('permissions'));
     }
@@ -78,7 +78,7 @@ class PermissionController extends Controller
         {
             $permission->update(['name' => $request->input('name')]);
 
-            return redirect()->route('permissions.index')->with('success','Permission updated successfully');
+            return redirect()->route('permissions.index')->with('success', 'Permission updated successfully');
         }
         else
         {

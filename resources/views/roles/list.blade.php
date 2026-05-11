@@ -38,16 +38,16 @@
                                         {{ Carbon::parse($role->created_at)->format('d M, Y') }}
                                     </td>
                                     <td class="px-6 py-3 text-center">
-                                       {{-- <a href="{{ route('roles.edit', $role->id) }}"
+                                        <a href="{{ route('roles.edit', $role->id) }}"
                                            class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
                                             Edit
-                                        </a>--}}
+                                        </a>
 
-                                        {{--<a href="javascript:void(0);"
+                                        <a href="javascript:void(0);"
                                            data-url="{{ route('roles.delete', $role->id) }}"
                                            class="delete-role bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
                                             Delete
-                                        </a>--}}
+                                        </a>
                                     </td>
                                 </tr>
                             @endforeach

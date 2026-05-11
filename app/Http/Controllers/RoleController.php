@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\Input;
 use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -58,5 +59,64 @@ class RoleController extends Controller
         {
             return redirect()->route('roles.create')->withInput()->withErrors($validator);
         }
+    }
+
+    /**
+     * @param Role $role
+     * @return Renderable
+     */
+    public function edit(Role $role): Renderable
+    {
+        $hasPermissions = $role->permissions->pluck('name');
+        $permissions = Permission::query()->orderBy('name')->get();
+
+        return view('roles.edit', compact('role', 'hasPermissions', 'permissions'));
+    }
+
+    /**
+     * @param Request $request
+     * @param Role $role
+     * @return RedirectResponse
+     */
+    public function update(Request $request, Role $role): RedirectResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|min:3|unique:roles,name,'. $role->id . ',id'
+        ]);
+
+        if ($validator->passes())
+        {
+            $role->update(['name' => $request->input('name')]);
+
+            if (!empty($request->input('permission')))
+            {
+                $role->syncPermissions($request->input('permission'));
+            }
+            else
+            {
+                $role->syncPermissions([]);
+            }
+
+            return redirect()->route('roles.index')->with('success', 'Role updated successfully');
+        }
+        else
+        {
+            return redirect()->route('roles.edit', $role)->withInput()->withErrors($validator);
+        }
+    }
+
+    /**
+     * @param Role $role
+     * @return JsonResponse
+     */
+    public function destroy(Role $role): JsonResponse
+    {
+        $role->delete();
+
+        session()->flash('success', 'Role deleted successfully');
+
+        return response()->json([
+            'success' => true,
+        ]);
     }
 }
