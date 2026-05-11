@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\Input;
 use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -85,8 +86,18 @@ class PermissionController extends Controller
         }
     }
 
-    public function destroy()
+    /**
+     * @param Permission $permission
+     * @return JsonResponse
+     */
+    public function destroy(Permission $permission): JsonResponse
     {
+        $permission->delete();
 
+        session()->flash('success', 'Permission deleted successfully');
+
+        return response()->json([
+            'success' => true,
+        ]);
     }
 }

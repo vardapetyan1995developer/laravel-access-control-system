@@ -32,5 +32,11 @@
                 {{ $slot }}
             </main>
         </div>
+
+        <script src="{{ asset('lib/jquery.min.js') }}"></script>
+
+        @isset($script)
+            {{ $script }}
+        @endisset
     </body>
 </html>

@@ -36,13 +36,14 @@
                                         {{ Carbon::parse($permission->created_at)->format('d M, Y') }}
                                     </td>
                                     <td class="px-6 py-3 text-center">
-                                        <a href="{{ route('permissions.edit', $permission) }}"
+                                        <a href="{{ route('permissions.edit', $permission->id) }}"
                                            class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
                                             Edit
                                         </a>
 
-                                        <a href="#"
-                                           class="bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
+                                        <a href="javascript:void(0);"
+                                           data-url="{{ route('permissions.delete', $permission->id) }}"
+                                           class="delete-permission bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
                                             Delete
                                         </a>
                                     </td>
@@ -59,4 +60,36 @@
             </div>
         </div>
     </div>
+
+    <x-slot name="script">
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $(document).on('click', '.delete-permission', function(e) {
+                    e.preventDefault();
+
+                    let url = $(this).data('url');
+                    
+                    if (confirm('Are you sure you want to delete?')) {
+                        $.ajax({
+                            url: url,
+                            type: 'DELETE',
+                            dataType: 'json',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function (response) {
+                                if (response.success) {
+                                    // Reload to show the flash message correctly
+                                    window.location.reload();
+                                }
+                            },
+                            error: function(xhr) {
+                                alert('Something went wrong. Please try again.');
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+    </x-slot>
 </x-app-layout>
