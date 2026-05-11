@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Symfony\Component\Routing\Attribute\Route;
 
 class RoleController extends Controller
 {
