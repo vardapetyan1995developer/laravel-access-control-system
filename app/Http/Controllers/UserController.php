@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Validator;
 
@@ -39,12 +40,38 @@ class UserController extends Controller implements HasMiddleware
 
     public function create(): Renderable
     {
-        return view('users.create');
+        $roles = Role::query()->orderBy('name')->get();
+
+        return view('users.create', compact('roles'));
     }
 
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|min:3',
+            'email' => ['required', 'min:3', 'email', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:5', 'same:confirm_password'],
+        ]);
+
+        if ($validator->passes())
+        {
+            $user = User::query()->create([
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'password' => Hash::make($request->input('password')),
+            ]);
+
+            if (auth()->user()->can('create user roles'))
+            {
+                $user->syncRoles($request->input('role'));
+            }
+
+            return redirect()->route('users.index')->with('success', 'User updated successfully');
+        }
+        else
+        {
+            return redirect()->route('users.create')->withInput()->withErrors($validator);
+        }
     }
 
     /**
