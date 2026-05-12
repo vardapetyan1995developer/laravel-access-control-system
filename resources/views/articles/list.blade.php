@@ -33,7 +33,7 @@
                                 <tr class="border-b">
                                     <td class="px-6 py-3 text-left">{{ $article->id }}</td>
                                     <td class="px-6 py-3 text-left">
-                                        <a href="{{ route('articles.show', $article) }}">{{ $article->name }}</a>
+                                        <a href="{{ route('articles.show', $article) }}" class="hover:text-blue-500">{{ $article->name }}</a>
                                     </td>
                                     <td class="px-6 py-3 text-left">{{ $article->author }}</td>
                                     <td class="px-6 py-3 text-left">
