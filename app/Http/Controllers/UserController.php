@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
@@ -52,7 +53,10 @@ class UserController extends Controller implements HasMiddleware
      */
     public function show(User $user): Renderable
     {
-        return view('users.show', compact('user'));
+        $roles = Role::query()->orderBy('name')->get();
+        $hasRoles = $user->roles()->pluck('id');
+
+        return view('users.show', compact('user', 'roles', 'hasRoles'));
     }
 
     /**
@@ -86,7 +90,10 @@ class UserController extends Controller implements HasMiddleware
                 'email' => $request->input('email'),
             ]);
 
-            $user->syncRoles($request->input('role'));
+            if (auth()->user()->can('edit user roles'))
+            {
+                $user->syncRoles($request->input('role'));
+            }
 
             return redirect()->route('users.index')->with('success', 'User updated successfully');
         }
@@ -96,8 +103,18 @@ class UserController extends Controller implements HasMiddleware
         }
     }
 
-    public function destroy(User $user)
+    /**
+     * @param User $user
+     * @return JsonResponse
+     */
+    public function destroy(User $user): JsonResponse
     {
-        //
+        $user->delete();
+
+        session()->flash('success', 'User deleted successfully');
+
+        return response()->json([
+            'success' => true,
+        ]);
     }
 }

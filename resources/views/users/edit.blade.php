@@ -34,16 +34,18 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-4 mb-3">
-                            @if($roles->isNotEmpty())
-                                @foreach($roles as $key => $role)
-                                    <div class="mt-3">
-                                        <input type="checkbox" {{ $hasRoles->contains($role->id) ? 'checked' : '' }} class="rounded" name="role[]" id="role-{{ $role->id }}" value="{{ $role->name }}">
-                                        <label for="role-{{ $role->id }}">{{ $role->name }}</label>
-                                    </div>
-                                @endforeach
-                            @endif
-                        </div>
+                        @can('edit user roles')
+                            <div class="grid grid-cols-4 mb-3">
+                                @if($roles->isNotEmpty())
+                                    @foreach($roles as $key => $role)
+                                        <div class="mt-3">
+                                            <input type="checkbox" {{ $hasRoles->contains($role->id) ? 'checked' : '' }} class="rounded" name="role[]" id="role-{{ $role->id }}" value="{{ $role->name }}">
+                                            <label for="role-{{ $role->id }}">{{ $role->name }}</label>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                        @endcan
 
                         <button class="bg-slate-700 text-sm rounded-md text-white px-5 py-3">Update</button>
                     </form>
