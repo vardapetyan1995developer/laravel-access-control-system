@@ -7,11 +7,26 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Permission;
 
-class PermissionController extends Controller
+class PermissionController extends Controller implements HasMiddleware
 {
+    /**
+     * @return Middleware[]
+     */
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view permissions', only: ['index']),
+            new Middleware('permission:edit permissions', only: ['edit']),
+            new Middleware('permission:create permissions', only: ['create']),
+            new Middleware('permission:delete permissions', only: ['destroy']),
+        ];
+    }
+
     /**
      * @return Renderable
      */

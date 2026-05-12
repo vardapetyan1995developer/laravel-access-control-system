@@ -7,7 +7,10 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Articles') }}
             </h2>
-            <a href="{{ route('articles.create') }}" class="bg-slate-700 text-sm rounded-md text-white px-3 py-2">Create</a>
+            @can('create articles')
+                <a href="{{ route('articles.create') }}"
+                   class="bg-slate-700 text-sm rounded-md text-white px-3 py-2">Create</a>
+            @endcan
         </div>
     </x-slot>
 
@@ -34,23 +37,28 @@
                                     <tr class="border-b">
                                         <td class="px-6 py-3 text-left">{{ $article->id }}</td>
                                         <td class="px-6 py-3 text-left">
-                                            <a href="{{ route('articles.show', $article) }}" class="hover:text-blue-500">{{ $article->name }}</a>
+                                            <a href="{{ route('articles.show', $article) }}"
+                                               class="hover:text-blue-500">{{ $article->name }}</a>
                                         </td>
                                         <td class="px-6 py-3 text-left">{{ $article->author }}</td>
                                         <td class="px-6 py-3 text-left">
                                             {{ Carbon::parse($article->created_at)->format('d M, Y') }}
                                         </td>
                                         <td class="px-6 py-3 text-center">
-                                            <a href="{{ route('articles.edit', $article->id) }}"
-                                               class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
-                                                Edit
-                                            </a>
+                                            @can('edit articles')
+                                                <a href="{{ route('articles.edit', $article->id) }}"
+                                                   class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
+                                                    Edit
+                                                </a>
+                                            @endcan
 
-                                            <a href="javascript:void(0);"
-                                               data-url="{{ route('articles.delete', $article->id) }}"
-                                               class="delete-article bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
-                                                Delete
-                                            </a>
+                                            @can('delete articles')
+                                                <a href="javascript:void(0);"
+                                                   data-url="{{ route('articles.delete', $article->id) }}"
+                                                   class="delete-article bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
+                                                    Delete
+                                                </a>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @endforeach
@@ -69,8 +77,8 @@
 
     <x-slot name="script">
         <script type="text/javascript">
-            $(document).ready(function() {
-                $(document).on('click', '.delete-article', function(e) {
+            $(document).ready(function () {
+                $(document).on('click', '.delete-article', function (e) {
                     e.preventDefault();
 
                     let url = $(this).data('url');
@@ -89,7 +97,7 @@
                                     window.location.reload();
                                 }
                             },
-                            error: function(xhr) {
+                            error: function (xhr) {
                                 alert('Something went wrong. Please try again.');
                             }
                         });

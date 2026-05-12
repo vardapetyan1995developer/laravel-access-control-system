@@ -7,7 +7,10 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Roles') }}
             </h2>
-            <a href="{{ route('roles.create') }}" class="bg-slate-700 text-sm rounded-md text-white px-3 py-2">Create</a>
+            @can('create roles')
+                <a href="{{ route('roles.create') }}"
+                   class="bg-slate-700 text-sm rounded-md text-white px-3 py-2">Create</a>
+            @endcan
         </div>
     </x-slot>
 
@@ -39,16 +42,20 @@
                                             {{ Carbon::parse($role->created_at)->format('d M, Y') }}
                                         </td>
                                         <td class="px-6 py-3 text-center">
-                                            <a href="{{ route('roles.edit', $role->id) }}"
-                                               class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
-                                                Edit
-                                            </a>
+                                            @can('edit roles')
+                                                <a href="{{ route('roles.edit', $role->id) }}"
+                                                   class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
+                                                    Edit
+                                                </a>
+                                            @endcan
 
-                                            <a href="javascript:void(0);"
-                                               data-url="{{ route('roles.delete', $role->id) }}"
-                                               class="delete-role bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
-                                                Delete
-                                            </a>
+                                            @can('delete roles')
+                                                <a href="javascript:void(0);"
+                                                   data-url="{{ route('roles.delete', $role->id) }}"
+                                                   class="delete-role bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
+                                                    Delete
+                                                </a>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @endforeach
@@ -67,8 +74,8 @@
 
     <x-slot name="script">
         <script type="text/javascript">
-            $(document).ready(function() {
-                $(document).on('click', '.delete-role', function(e) {
+            $(document).ready(function () {
+                $(document).on('click', '.delete-role', function (e) {
                     e.preventDefault();
 
                     let url = $(this).data('url');
@@ -87,7 +94,7 @@
                                     window.location.reload();
                                 }
                             },
-                            error: function(xhr) {
+                            error: function (xhr) {
                                 alert('Something went wrong. Please try again.');
                             }
                         });

@@ -7,7 +7,10 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Users') }}
             </h2>
-            <a href="{{ route('users.create') }}" class="bg-slate-700 text-sm rounded-md text-white px-3 py-2">Create</a>
+            @can('create users')
+                <a href="{{ route('users.create') }}"
+                   class="bg-slate-700 text-sm rounded-md text-white px-3 py-2">Create</a>
+            @endcan
         </div>
     </x-slot>
 
@@ -35,7 +38,8 @@
                                     <tr class="border-b">
                                         <td class="px-6 py-3 text-left">{{ $user->id }}</td>
                                         <td class="px-6 py-3 text-left">
-                                            <a href="{{ route('users.show', $user) }}" class="hover:text-blue-500">{{ $user->name }}</a>
+                                            <a href="{{ route('users.show', $user) }}"
+                                               class="hover:text-blue-500">{{ $user->name }}</a>
                                         </td>
                                         <td class="px-6 py-3 text-left">{{ $user->email }}</td>
                                         <td class="px-6 py-3 text-left">
@@ -45,16 +49,20 @@
                                             {{ Carbon::parse($user->created_at)->format('d M, Y') }}
                                         </td>
                                         <td class="px-6 py-3 text-center">
-                                            <a href="{{ route('users.edit', $user->id) }}"
-                                               class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
-                                                Edit
-                                            </a>
+                                            @can('edit users')
+                                                <a href="{{ route('users.edit', $user->id) }}"
+                                                   class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
+                                                    Edit
+                                                </a>
+                                            @endcan
 
-                                            <a href="javascript:void(0);"
-                                               data-url="{{ route('users.delete', $user->id) }}"
-                                               class="delete-user bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
-                                                Delete
-                                            </a>
+                                            @can('delete users')
+                                                <a href="javascript:void(0);"
+                                                   data-url="{{ route('users.delete', $user->id) }}"
+                                                   class="delete-user bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
+                                                    Delete
+                                                </a>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @endforeach
@@ -73,8 +81,8 @@
 
     <x-slot name="script">
         <script type="text/javascript">
-            $(document).ready(function() {
-                $(document).on('click', '.delete-user', function(e) {
+            $(document).ready(function () {
+                $(document).on('click', '.delete-user', function (e) {
                     e.preventDefault();
 
                     let url = $(this).data('url');
@@ -93,7 +101,7 @@
                                     window.location.reload();
                                 }
                             },
-                            error: function(xhr) {
+                            error: function (xhr) {
                                 alert('Something went wrong. Please try again.');
                             }
                         });

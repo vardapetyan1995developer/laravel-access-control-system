@@ -7,7 +7,9 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Permissions') }}
             </h2>
-            <a href="{{ route('permissions.create') }}" class="bg-slate-700 text-sm rounded-md text-white px-3 py-2">Create</a>
+            @can('create permissions')
+                <a href="{{ route('permissions.create') }}" class="bg-slate-700 text-sm rounded-md text-white px-3 py-2">Create</a>
+            @endcan
         </div>
     </x-slot>
 
@@ -37,16 +39,20 @@
                                             {{ Carbon::parse($permission->created_at)->format('d M, Y') }}
                                         </td>
                                         <td class="px-6 py-3 text-center">
-                                            <a href="{{ route('permissions.edit', $permission->id) }}"
-                                               class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
-                                                Edit
-                                            </a>
+                                            @can('edit permissions')
+                                                <a href="{{ route('permissions.edit', $permission->id) }}"
+                                                   class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
+                                                    Edit
+                                                </a>
+                                            @endcan
 
-                                            <a href="javascript:void(0);"
-                                               data-url="{{ route('permissions.delete', $permission->id) }}"
-                                               class="delete-permission bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
-                                                Delete
-                                            </a>
+                                            @can('delete permissions')
+                                                <a href="javascript:void(0);"
+                                                   data-url="{{ route('permissions.delete', $permission->id) }}"
+                                                   class="delete-permission bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
+                                                    Delete
+                                                </a>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @endforeach
@@ -65,8 +71,8 @@
 
     <x-slot name="script">
         <script type="text/javascript">
-            $(document).ready(function() {
-                $(document).on('click', '.delete-permission', function(e) {
+            $(document).ready(function () {
+                $(document).on('click', '.delete-permission', function (e) {
                     e.preventDefault();
 
                     let url = $(this).data('url');
@@ -85,7 +91,7 @@
                                     window.location.reload();
                                 }
                             },
-                            error: function(xhr) {
+                            error: function (xhr) {
                                 alert('Something went wrong. Please try again.');
                             }
                         });

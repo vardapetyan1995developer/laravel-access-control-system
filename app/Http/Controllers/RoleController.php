@@ -7,13 +7,27 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Symfony\Component\Routing\Attribute\Route;
 
-class RoleController extends Controller
+class RoleController extends Controller implements HasMiddleware
 {
+    /**
+     * @return Middleware[]
+     */
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:view roles', only: ['index']),
+            new Middleware('permission:edit roles', only: ['edit']),
+            new Middleware('permission:create roles', only: ['create']),
+            new Middleware('permission:delete roles', only: ['destroy']),
+        ];
+    }
+
     /**
      * @return Renderable
      */
