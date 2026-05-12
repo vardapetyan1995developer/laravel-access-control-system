@@ -32,7 +32,9 @@
                             @foreach($articles as $key => $article)
                                 <tr class="border-b">
                                     <td class="px-6 py-3 text-left">{{ $article->id }}</td>
-                                    <td class="px-6 py-3 text-left">{{ $article->name }}</td>
+                                    <td class="px-6 py-3 text-left">
+                                        <a href="{{ route('articles.show', $article) }}">{{ $article->name }}</a>
+                                    </td>
                                     <td class="px-6 py-3 text-left">{{ $article->author }}</td>
                                     <td class="px-6 py-3 text-left">
                                         {{ Carbon::parse($article->created_at)->format('d M, Y') }}

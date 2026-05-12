@@ -59,11 +59,12 @@ class ArticleController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * @param Article $article
+     * @return Renderable
      */
-    public function show(Article $article)
+    public function show(Article $article): Renderable
     {
-        //
+        return view('articles.show', compact('article'));
     }
 
     /**
