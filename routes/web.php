@@ -4,6 +4,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Facades\Route;
 
@@ -57,6 +58,18 @@ Route::middleware(['auth'])->group(function (): void
         Route::get('/{article}/edit', [ArticleController::class, 'edit'])->name('articles.edit');
         Route::patch('/{article}', [ArticleController::class, 'update'])->name('articles.update');
         Route::delete('/{article}', [ArticleController::class, 'destroy'])->name('articles.delete');
+    });
+
+    //Users routes
+    Route::prefix('/users')->group(function (): void
+    {
+        Route::get('/', [UserController::class, 'index'])->name('users.index');
+        Route::get('/create', [UserController::class, 'create'])->name('users.create');
+        Route::get('/{user}', [UserController::class, 'show'])->name('users.show');
+        Route::post('/store', [UserController::class, 'store'])->name('users.store');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::patch('/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('users.delete');
     });
 });
 
