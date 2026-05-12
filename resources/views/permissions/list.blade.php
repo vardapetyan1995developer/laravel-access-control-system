@@ -17,41 +17,43 @@
                 <div class="p-6 text-gray-900">
                     <x-message></x-message>
 
-                    <table class="w-full">
-                        <thead class="bg-gray-50">
-                        <tr class="border-b">
-                            <th class="px-6 py-3 text-left" width="60">#</th>
-                            <th class="px-6 py-3 text-left">Name</th>
-                            <th class="px-6 py-3 text-left" width="180">Created</th>
-                            <th class="px-6 py-3 text-center" width="180">Action</th>
-                        </tr>
-                        </thead>
-                        <tbody class="bg-white">
-                        @if($permissions->isNotEmpty())
-                            @foreach($permissions as $key => $permission)
-                                <tr class="border-b">
-                                    <td class="px-6 py-3 text-left">{{ $permission->id }}</td>
-                                    <td class="px-6 py-3 text-left">{{ $permission->name }}</td>
-                                    <td class="px-6 py-3 text-left">
-                                        {{ Carbon::parse($permission->created_at)->format('d M, Y') }}
-                                    </td>
-                                    <td class="px-6 py-3 text-center">
-                                        <a href="{{ route('permissions.edit', $permission->id) }}"
-                                           class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
-                                            Edit
-                                        </a>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                            <tr class="border-b">
+                                <th class="px-6 py-3 text-left" width="60">#</th>
+                                <th class="px-6 py-3 text-left">Name</th>
+                                <th class="px-6 py-3 text-left" width="180">Created</th>
+                                <th class="px-6 py-3 text-center" width="180">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody class="bg-white">
+                            @if($permissions->isNotEmpty())
+                                @foreach($permissions as $key => $permission)
+                                    <tr class="border-b">
+                                        <td class="px-6 py-3 text-left">{{ $permission->id }}</td>
+                                        <td class="px-6 py-3 text-left">{{ $permission->name }}</td>
+                                        <td class="px-6 py-3 text-left">
+                                            {{ Carbon::parse($permission->created_at)->format('d M, Y') }}
+                                        </td>
+                                        <td class="px-6 py-3 text-center">
+                                            <a href="{{ route('permissions.edit', $permission->id) }}"
+                                               class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
+                                                Edit
+                                            </a>
 
-                                        <a href="javascript:void(0);"
-                                           data-url="{{ route('permissions.delete', $permission->id) }}"
-                                           class="delete-permission bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
-                                            Delete
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @endif
-                        </tbody>
-                    </table>
+                                            <a href="javascript:void(0);"
+                                               data-url="{{ route('permissions.delete', $permission->id) }}"
+                                               class="delete-permission bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
+                                                Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
+                            </tbody>
+                        </table>
+                    </div>
 
                     <div class="my-3">
                         {{ $permissions->links() }}
@@ -68,7 +70,7 @@
                     e.preventDefault();
 
                     let url = $(this).data('url');
-                    
+
                     if (confirm('Are you sure you want to delete?')) {
                         $.ajax({
                             url: url,

@@ -17,45 +17,47 @@
                 <div class="p-6 text-gray-900">
                     <x-message></x-message>
 
-                    <table class="w-full">
-                        <thead class="bg-gray-50">
-                        <tr class="border-b">
-                            <th class="px-6 py-3 text-left" width="60">#</th>
-                            <th class="px-6 py-3 text-left">Name</th>
-                            <th class="px-6 py-3 text-left">Author</th>
-                            <th class="px-6 py-3 text-left" width="180">Created</th>
-                            <th class="px-6 py-3 text-center" width="180">Action</th>
-                        </tr>
-                        </thead>
-                        <tbody class="bg-white">
-                        @if($articles->isNotEmpty())
-                            @foreach($articles as $key => $article)
-                                <tr class="border-b">
-                                    <td class="px-6 py-3 text-left">{{ $article->id }}</td>
-                                    <td class="px-6 py-3 text-left">
-                                        <a href="{{ route('articles.show', $article) }}" class="hover:text-blue-500">{{ $article->name }}</a>
-                                    </td>
-                                    <td class="px-6 py-3 text-left">{{ $article->author }}</td>
-                                    <td class="px-6 py-3 text-left">
-                                        {{ Carbon::parse($article->created_at)->format('d M, Y') }}
-                                    </td>
-                                    <td class="px-6 py-3 text-center">
-                                        <a href="{{ route('articles.edit', $article->id) }}"
-                                           class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
-                                            Edit
-                                        </a>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                            <tr class="border-b">
+                                <th class="px-6 py-3 text-left" width="60">#</th>
+                                <th class="px-6 py-3 text-left">Name</th>
+                                <th class="px-6 py-3 text-left">Author</th>
+                                <th class="px-6 py-3 text-left" width="180">Created</th>
+                                <th class="px-6 py-3 text-center" width="180">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody class="bg-white">
+                            @if($articles->isNotEmpty())
+                                @foreach($articles as $key => $article)
+                                    <tr class="border-b">
+                                        <td class="px-6 py-3 text-left">{{ $article->id }}</td>
+                                        <td class="px-6 py-3 text-left">
+                                            <a href="{{ route('articles.show', $article) }}" class="hover:text-blue-500">{{ $article->name }}</a>
+                                        </td>
+                                        <td class="px-6 py-3 text-left">{{ $article->author }}</td>
+                                        <td class="px-6 py-3 text-left">
+                                            {{ Carbon::parse($article->created_at)->format('d M, Y') }}
+                                        </td>
+                                        <td class="px-6 py-3 text-center">
+                                            <a href="{{ route('articles.edit', $article->id) }}"
+                                               class="bg-slate-500 text-sm rounded-md text-white px-3 py-2 hover:bg-slate-500">
+                                                Edit
+                                            </a>
 
-                                        <a href="javascript:void(0);"
-                                           data-url="{{ route('articles.delete', $article->id) }}"
-                                           class="delete-article bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
-                                            Delete
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @endif
-                        </tbody>
-                    </table>
+                                            <a href="javascript:void(0);"
+                                               data-url="{{ route('articles.delete', $article->id) }}"
+                                               class="delete-article bg-red-500 text-sm rounded-md text-white px-3 py-2 hover:bg-red-500 m-1">
+                                                Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
+                            </tbody>
+                        </table>
+                    </div>
 
                     <div class="my-3">
                         {{ $articles->links() }}

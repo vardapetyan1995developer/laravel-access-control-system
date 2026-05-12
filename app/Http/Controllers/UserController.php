@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
+use Validator;
 
 class UserController extends Controller
 {
@@ -13,7 +16,9 @@ class UserController extends Controller
      */
     public function index(): Renderable
     {
-        return view('users.list');
+        $users = User::query()->latest()->paginate(5);
+
+        return view('users.list', compact('users'));
     }
 
     public function create(): Renderable
@@ -41,12 +46,39 @@ class UserController extends Controller
      */
     public function edit(User $user): Renderable
     {
-        return view('users.edit', compact('user'));
+        $roles = Role::query()->orderBy('name')->get();
+        $hasRoles = $user->roles()->pluck('id');
+
+        return view('users.edit', compact('user', 'roles', 'hasRoles'));
     }
 
-    public function update(Request $request, User $user)
+    /**
+     * @param Request $request
+     * @param User $user
+     * @return RedirectResponse
+     */
+    public function update(Request $request, User $user): RedirectResponse
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|min:3',
+            'email' => ['required', 'min:3', 'email', 'unique:users,email,'. $user->id . ',id'],
+        ]);
+
+        if ($validator->passes())
+        {
+            $user->update([
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+            ]);
+
+            $user->syncRoles($request->input('role'));
+
+            return redirect()->route('users.index')->with('success', 'User updated successfully');
+        }
+        else
+        {
+            return redirect()->route('users.edit', $user)->withInput()->withErrors($validator);
+        }
     }
 
     public function destroy(User $user)
