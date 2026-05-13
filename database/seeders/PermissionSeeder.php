@@ -17,7 +17,7 @@ class PermissionSeeder extends Seeder
             'roles'       => ['view', 'edit', 'create', 'delete'],
             'users'       => ['view', 'edit', 'create', 'delete'],
             'articles'    => ['view', 'edit', 'create', 'delete'],
-            'user role'    => ['edit', 'create'],
+            'user roles'    => ['edit', 'create'],
         ];
 
         collect($permissionsMap)->each(function (array $actions, string $entity): void
