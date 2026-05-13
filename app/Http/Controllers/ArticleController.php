@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\Input;
 use App\Models\Article;
+use App\Services\ArticleService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -14,6 +15,16 @@ use Illuminate\Support\Facades\Validator;
 
 class ArticleController extends Controller implements HasMiddleware
 {
+    private ArticleService $articleService;
+
+    /**
+     * @param ArticleService $articleService
+     */
+    public function __construct(ArticleService $articleService)
+    {
+        $this->articleService = $articleService;
+    }
+
     /**
      * @return array
      */
@@ -32,7 +43,7 @@ class ArticleController extends Controller implements HasMiddleware
      */
     public function index(): Renderable
     {
-        $articles = Article::query()->orderByDesc('created_at')->paginate(5);
+        $articles = $this->articleService->allArticlesPaginated();
 
         return view('articles.list', compact('articles'));
     }
