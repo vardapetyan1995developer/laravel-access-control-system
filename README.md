@@ -1,58 +1,98 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Spatie Roles & Permissions - Advanced Architecture Portfolio
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?style=for-the-badge&logo=php)](https://php.net)
+[![Spatie](https://img.shields.io/badge/Spatie-Permissions-7.4-blue?style=for-the-badge)](https://spatie.be/docs/laravel-permission/v6/introduction)
+[![Pest](https://img.shields.io/badge/Pest-4.7-FF4B72?style=for-the-badge)](https://pestphp.com)
 
-## About Laravel
+This project is an enterprise-grade demonstration of a Role-Based Access Control (RBAC) system combined with an Articles management module. Built on **Laravel 13**, it moves beyond simple MVC patterns to implement a robust, decoupled **Service-Repository Architecture**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This repository is designed to showcase senior-level backend development practices, focusing on maintainability, dependency injection, and clean code.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🏗️ Architectural Deep Dive
 
-## Learning Laravel
+To ensure the codebase scales effectively and remains testable, the logic is highly decoupled:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 1. The Service-Repository Pattern
+- **Repositories (`app/Repositories`):** Data access is abstracted away from Eloquent via strict interfaces (`ArticleRepositoryInterface`, `UserRepositoryInterface`, etc.). This means the underlying database logic can be swapped or mocked without affecting the rest of the app.
+- **Services (`app/Services`):** Controllers do not contain business logic. Instead, `PermissionService`, `RoleService`, `UserService`, and `ArticleService` handle all core logic (e.g., password hashing, syncing roles/permissions, orchestrating data).
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 2. Dependency Injection (`DiServiceProvider`)
+All Repositories are bound to their respective Interfaces within `app/Providers/DiServiceProvider.php`. The Application Container injects these dependencies seamlessly into the Service layer.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 3. Dedicated Validation Layer
+Controllers are kept entirely free of validation rules. All incoming data is rigorously validated through 8 dedicated **Form Requests** in `app/Http/Requests` (e.g., `StoreArticleRequest`, `UpdateUserRequest`, `ProfileUpdateRequest`).
 
-## Agentic Development
+### 4. Security & Access Control
+- Middleware enforces Spatie permissions at the Controller level using the modern `HasMiddleware` interface (e.g., `new Middleware('permission:edit articles', only: ['edit'])`).
+- User input is manually sanitized via a custom helper class (`App\Helpers\Input::filter()`) to prevent injection attacks before data reaches the service layer.
+- Email verification automatically resets when a user changes their email address in the `UserService`.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
 
+## 🗂️ Core Modules
+
+1. **User Management:** Complete CRUD, assigning Roles to Users, and Profile updating.
+2. **Role Management:** Creating roles and syncing them with multiple specific permissions.
+3. **Permission Management:** Managing granular system permissions (e.g., `view articles`, `edit users`).
+4. **Article Management:** A content module acting as the protected resource, requiring specific permissions to view, create, edit, or delete articles.
+
+---
+
+## 🛠️ Tech Stack & Dependencies
+
+- **Core:** PHP 8.3+, Laravel Framework 13.x
+- **Authentication:** Laravel Breeze (Session-based)
+- **Authorization:** `spatie/laravel-permission` (^7.4)
+- **Frontend Assets:** Vite, Tailwind CSS 3, Alpine.js
+- **Testing:** Pest PHP (^4.7)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone & Install
 ```bash
-composer require laravel/boost --dev
+git clone https://github.com/your-username/spatie-roles-permissions.git
+cd spatie-roles-permissions
 
-php artisan boost:install
+composer install
+npm install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Environment Setup
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+*Configure your database credentials in the newly created `.env` file. The project supports MySQL, PostgreSQL, or SQLite.*
 
-## Contributing
+### 3. Migrations & Seeders
+The project includes fully configured seeders to populate initial roles, permissions, and an admin user.
+```bash
+php artisan migrate --seed
+```
+*(Runs `DatabaseSeeder`, `PermissionSeeder`, `RoleSeeder`, and `UserSeeder`)*
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Build Assets & Serve
+```bash
+npm run build
+php artisan serve
+```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🧪 Testing
 
-## Security Vulnerabilities
+The project is configured with **Pest PHP** for elegant testing syntax.
+```bash
+php artisan test
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## 📝 License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
