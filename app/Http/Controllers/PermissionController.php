@@ -3,17 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Input;
+use App\Http\Requests\StorePermissionRequest;
+use App\Http\Requests\UpdatePermissionRequest;
+use App\Services\PermissionService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller implements HasMiddleware
 {
+    private PermissionService $permissionService;
+
+    /**
+     * @param PermissionService $permissionService
+     */
+    public function __construct(PermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
+    }
+
     /**
      * @return Middleware[]
      */
@@ -32,7 +43,7 @@ class PermissionController extends Controller implements HasMiddleware
      */
     public function index(): Renderable
     {
-        $permissions = Permission::query()->orderByDesc('created_at')->paginate(5);
+        $permissions = $this->permissionService->getPaginatedPermissions();
 
         return view('permissions.list', compact('permissions'));
     }
@@ -46,27 +57,16 @@ class PermissionController extends Controller implements HasMiddleware
     }
 
     /**
-     * @param Request $request
+     * @param StorePermissionRequest $request
      * @return RedirectResponse
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StorePermissionRequest $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'unique:permissions', 'min:3'],
+        $this->permissionService->createPermission([
+            'name' => Input::filter($request->input('name')),
         ]);
 
-        if ($validator->passes())
-        {
-            Permission::query()->create([
-                'name' => Input::filter($request->input('name')),
-            ]);
-
-            return redirect()->route('permissions.index')->with('success', 'Permission created successfully.');
-        }
-        else
-        {
-            return redirect()->route('permissions.create')->withInput()->withErrors($validator);
-        }
+        return redirect()->route('permissions.index')->with('success', 'Permission created successfully.');
     }
 
     /**
@@ -79,26 +79,17 @@ class PermissionController extends Controller implements HasMiddleware
     }
 
     /**
-     * @param Request $request
+     * @param UpdatePermissionRequest $request
      * @param Permission $permission
      * @return RedirectResponse
      */
-    public function update(Request $request, Permission $permission): RedirectResponse
+    public function update(UpdatePermissionRequest $request, Permission $permission): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|min:3|unique:permissions,name,'. $permission->id . ',id'
+        $this->permissionService->updatePermission($permission, [
+            'name' => $request->input('name')
         ]);
 
-        if ($validator->passes())
-        {
-            $permission->update(['name' => $request->input('name')]);
-
-            return redirect()->route('permissions.index')->with('success', 'Permission updated successfully');
-        }
-        else
-        {
-            return redirect()->route('permissions.edit', $permission)->withInput()->withErrors($validator);
-        }
+        return redirect()->route('permissions.index')->with('success', 'Permission updated successfully');
     }
 
     /**
@@ -107,7 +98,7 @@ class PermissionController extends Controller implements HasMiddleware
      */
     public function destroy(Permission $permission): JsonResponse
     {
-        $permission->delete();
+        $this->permissionService->deletePermission($permission);
 
         session()->flash('success', 'Permission deleted successfully');
 

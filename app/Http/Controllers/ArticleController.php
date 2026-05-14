@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Input;
+use App\Http\Requests\StoreArticleRequest;
+use App\Http\Requests\UpdateArticleRequest;
 use App\Models\Article;
 use App\Services\ArticleService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Support\Facades\Validator;
 
 class ArticleController extends Controller implements HasMiddleware
 {
@@ -43,7 +43,7 @@ class ArticleController extends Controller implements HasMiddleware
      */
     public function index(): Renderable
     {
-        $articles = $this->articleService->allArticlesPaginated();
+        $articles = $this->articleService->getPaginatedArticles();
 
         return view('articles.list', compact('articles'));
     }
@@ -57,31 +57,18 @@ class ArticleController extends Controller implements HasMiddleware
     }
 
     /**
-     * @param Request $request
+     * @param StoreArticleRequest $request
      * @return RedirectResponse
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreArticleRequest $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'unique:articles', 'min:3'],
-            'author' => ['required', 'min:3', 'string'],
-            'text' => ['nullable', 'min:3', 'string'],
+        $this->articleService->createArticle([
+            'name' => Input::filter($request->input('name')),
+            'author' => Input::filter($request->input('author')),
+            'text' => Input::filter($request->input('text')),
         ]);
 
-        if ($validator->passes())
-        {
-            Article::query()->create([
-                'name' => Input::filter($request->input('name')),
-                'author' => Input::filter($request->input('author')),
-                'text' => Input::filter($request->input('text')),
-            ]);
-
-            return redirect()->route('articles.index')->with('success', 'Article created successfully.');
-        }
-        else
-        {
-            return redirect()->route('articles.create')->withInput()->withErrors($validator);
-        }
+        return redirect()->route('articles.index')->with('success', 'Article created successfully.');
     }
 
     /**
@@ -102,32 +89,19 @@ class ArticleController extends Controller implements HasMiddleware
     }
 
     /**
-     * @param Request $request
+     * @param UpdateArticleRequest $request
      * @param Article $article
      * @return RedirectResponse
      */
-    public function update(Request $request, Article $article): RedirectResponse
+    public function update(UpdateArticleRequest $request, Article $article): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|min:3|unique:articles,name,'. $article->id . ',id',
-            'author' => ['required', 'min:3', 'string'],
-            'text' => ['nullable', 'min:3', 'string'],
+        $this->articleService->updateArticle($article, [
+            'name' => $request->input('name'),
+            'author' => $request->input('author'),
+            'text' => $request->input('text'),
         ]);
 
-        if ($validator->passes())
-        {
-            $article->update([
-                'name' => $request->input('name'),
-                'author' => $request->input('author'),
-                'text' => $request->input('text'),
-            ]);
-
-            return redirect()->route('articles.index')->with('success', 'Article updated successfully');
-        }
-        else
-        {
-            return redirect()->route('articles.edit', $article)->withInput()->withErrors($validator);
-        }
+        return redirect()->route('articles.index')->with('success', 'Article updated successfully');
     }
 
     /**
@@ -136,7 +110,7 @@ class ArticleController extends Controller implements HasMiddleware
      */
     public function destroy(Article $article): JsonResponse
     {
-        $article->delete();
+        $this->articleService->deleteArticle($article);
 
         session()->flash('success', 'Article deleted successfully');
 

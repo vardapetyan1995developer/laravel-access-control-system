@@ -34,7 +34,7 @@
 
                             <label for="password" class="text-lg font-medium">Password</label>
                             <div class="my-3">
-                                <input type="password" name="password" class="border-gray-300 shadow-sm w-1/2 rounded-lg" id="password" placeholder="Email" value="{{ old('password') }}" autocomplete="off">
+                                <input type="password" name="password" class="border-gray-300 shadow-sm w-1/2 rounded-lg" id="password" placeholder="Password" value="{{ old('password') }}" autocomplete="off">
                                 @error('password')
                                 <p class="text-red-400 font-medium">{{ $message }}</p>
                                 @enderror

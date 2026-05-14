@@ -3,18 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Input;
+use App\Http\Requests\StoreRoleRequest;
+use App\Http\Requests\UpdateRoleRequest;
+use App\Services\PermissionService;
+use App\Services\RoleService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Support\Facades\Validator;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller implements HasMiddleware
 {
+    private RoleService $roleService;
+    private PermissionService $permissionService;
+
+    /**
+     * @param RoleService $roleService
+     * @param PermissionService $permissionService
+     */
+    public function __construct(RoleService $roleService, PermissionService $permissionService)
+    {
+        $this->roleService = $roleService;
+        $this->permissionService = $permissionService;
+    }
+
     /**
      * @return Middleware[]
      */
@@ -33,7 +47,7 @@ class RoleController extends Controller implements HasMiddleware
      */
     public function index(): Renderable
     {
-        $roles = Role::query()->orderBy('name')->paginate(5);
+        $roles = $this->roleService->getPaginatedRoles();
 
         return view('roles.list', compact('roles'));
     }
@@ -43,37 +57,23 @@ class RoleController extends Controller implements HasMiddleware
      */
     public function create(): Renderable
     {
-        $permissions = Permission::query()->orderBy('name')->get();
+        $permissions = $this->permissionService->getAllPermissions();
 
         return view('roles.create', compact('permissions'));
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * @param StoreRoleRequest $request
+     * @return RedirectResponse
+     */
+    public function store(StoreRoleRequest $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'unique:roles', 'min:3'],
-        ]);
+        $this->roleService->createRole(
+            ['name' => Input::filter($request->input('name'))],
+            $request->input('permission', [])
+        );
 
-        if ($validator->passes())
-        {
-            $role = Role::query()->create([
-                'name' => Input::filter($request->input('name')),
-            ]);
-
-            if (!empty($request->input('permission')))
-            {
-                foreach ($request->input('permission') as $permission)
-                {
-                    $role->givePermissionTo($permission);
-                }
-            }
-
-            return redirect()->route('roles.index')->with('success', 'Role created successfully.');
-        }
-        else
-        {
-            return redirect()->route('roles.create')->withInput()->withErrors($validator);
-        }
+        return redirect()->route('roles.index')->with('success', 'Role created successfully.');
     }
 
     /**
@@ -83,41 +83,25 @@ class RoleController extends Controller implements HasMiddleware
     public function edit(Role $role): Renderable
     {
         $hasPermissions = $role->permissions->pluck('name');
-        $permissions = Permission::query()->orderBy('name')->get();
+        $permissions = $this->permissionService->getAllPermissions();
 
         return view('roles.edit', compact('role', 'hasPermissions', 'permissions'));
     }
 
     /**
-     * @param Request $request
+     * @param UpdateRoleRequest $request
      * @param Role $role
      * @return RedirectResponse
      */
-    public function update(Request $request, Role $role): RedirectResponse
+    public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|min:3|unique:roles,name,'. $role->id . ',id'
-        ]);
+        $this->roleService->updateRole(
+            $role,
+            ['name' => $request->input('name')],
+            $request->input('permission', [])
+        );
 
-        if ($validator->passes())
-        {
-            $role->update(['name' => $request->input('name')]);
-
-            if (!empty($request->input('permission')))
-            {
-                $role->syncPermissions($request->input('permission'));
-            }
-            else
-            {
-                $role->syncPermissions([]);
-            }
-
-            return redirect()->route('roles.index')->with('success', 'Role updated successfully');
-        }
-        else
-        {
-            return redirect()->route('roles.edit', $role)->withInput()->withErrors($validator);
-        }
+        return redirect()->route('roles.index')->with('success', 'Role updated successfully');
     }
 
     /**
@@ -126,7 +110,7 @@ class RoleController extends Controller implements HasMiddleware
      */
     public function destroy(Role $role): JsonResponse
     {
-        $role->delete();
+        $this->roleService->deleteRole($role);
 
         session()->flash('success', 'Role deleted successfully');
 

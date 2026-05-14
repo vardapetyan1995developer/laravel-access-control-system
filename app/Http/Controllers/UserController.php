@@ -2,19 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
+use App\Services\RoleService;
+use App\Services\UserService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
-use Validator;
 
 class UserController extends Controller implements HasMiddleware
 {
+    private UserService $userService;
+    private RoleService $roleService;
+
+    /**
+     * @param UserService $userService
+     * @param RoleService $roleService
+     */
+    public function __construct(UserService $userService, RoleService $roleService)
+    {
+        $this->userService = $userService;
+        $this->roleService = $roleService;
+    }
+
     /**
      * @return Middleware[]
      */
@@ -33,45 +46,30 @@ class UserController extends Controller implements HasMiddleware
      */
     public function index(): Renderable
     {
-        $users = User::query()->latest()->paginate(5);
+        $users = $this->userService->getPaginatedUsers();
 
         return view('users.list', compact('users'));
     }
 
     public function create(): Renderable
     {
-        $roles = Role::query()->orderBy('name')->get();
+        $roles = $this->roleService->getAllRoles();
 
         return view('users.create', compact('roles'));
     }
 
-    public function store(Request $request)
+    /**
+     * @param StoreUserRequest $request
+     * @return RedirectResponse
+     */
+    public function store(StoreUserRequest $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|min:3',
-            'email' => ['required', 'min:3', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:5', 'same:confirm_password'],
-        ]);
+        $this->userService->createUser(
+            $request->only(['name', 'email', 'password']),
+            $request->input('role', [])
+        );
 
-        if ($validator->passes())
-        {
-            $user = User::query()->create([
-                'name' => $request->input('name'),
-                'email' => $request->input('email'),
-                'password' => Hash::make($request->input('password')),
-            ]);
-
-            if (auth()->user()->can('create user roles'))
-            {
-                $user->syncRoles($request->input('role'));
-            }
-
-            return redirect()->route('users.index')->with('success', 'User updated successfully');
-        }
-        else
-        {
-            return redirect()->route('users.create')->withInput()->withErrors($validator);
-        }
+        return redirect()->route('users.index')->with('success', 'User created successfully');
     }
 
     /**
@@ -80,7 +78,7 @@ class UserController extends Controller implements HasMiddleware
      */
     public function show(User $user): Renderable
     {
-        $roles = Role::query()->orderBy('name')->get();
+        $roles = $this->roleService->getAllRoles();
         $hasRoles = $user->roles()->pluck('id');
 
         return view('users.show', compact('user', 'roles', 'hasRoles'));
@@ -92,42 +90,26 @@ class UserController extends Controller implements HasMiddleware
      */
     public function edit(User $user): Renderable
     {
-        $roles = Role::query()->orderBy('name')->get();
+        $roles = $this->roleService->getAllRoles();
         $hasRoles = $user->roles()->pluck('id');
 
         return view('users.edit', compact('user', 'roles', 'hasRoles'));
     }
 
     /**
-     * @param Request $request
+     * @param UpdateUserRequest $request
      * @param User $user
      * @return RedirectResponse
      */
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|min:3',
-            'email' => ['required', 'min:3', 'email', 'unique:users,email,'. $user->id . ',id'],
-        ]);
+        $this->userService->updateUser(
+            $user,
+            $request->only(['name', 'email']),
+            $request->input('role', [])
+        );
 
-        if ($validator->passes())
-        {
-            $user->update([
-                'name' => $request->input('name'),
-                'email' => $request->input('email'),
-            ]);
-
-            if (auth()->user()->can('edit user roles'))
-            {
-                $user->syncRoles($request->input('role'));
-            }
-
-            return redirect()->route('users.index')->with('success', 'User updated successfully');
-        }
-        else
-        {
-            return redirect()->route('users.edit', $user)->withInput()->withErrors($validator);
-        }
+        return redirect()->route('users.index')->with('success', 'User updated successfully');
     }
 
     /**
@@ -136,7 +118,7 @@ class UserController extends Controller implements HasMiddleware
      */
     public function destroy(User $user): JsonResponse
     {
-        $user->delete();
+        $this->userService->deleteUser($user);
 
         session()->flash('success', 'User deleted successfully');
 
